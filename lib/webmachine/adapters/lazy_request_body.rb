@@ -32,6 +32,25 @@ module Webmachine
           @request.body {|chunk| @value << chunk; yield chunk }
         end
       end
+        
+      # Read body data from the request
+      # @param [Integer] optional length of data to read
+      # @param [String]  optional buffer to recieve the data
+      # @return [String,nil] result of read operation
+      def read(length = nil, buffer = nil)
+        if @request.is_a?(::IO)
+          @request.read(length, buffer)
+        elsif @request.respond_to?(:read) # quacks like
+          @request.read(length, buffer)
+        else
+          case length
+          when nil
+            buffer ? buffer << self.to_s : self.to_s
+          else
+            raise ArgumentError, "Unable to fulfill read with a length argument on this request type"
+          end
+        end
+      end
     end # class RequestBody
   end # module Adapters
 end # module Webmachine
